@@ -1,0 +1,33 @@
+body {
+  padding: 20px;
+}
+.gameBoard {
+  border: 1px solid #800080;
+  width: 400px;
+  height: 300px;
+}
+.boardColumn {
+  display: inline-block;
+  border: 1px solid #f00;
+  width: 40px;
+  float: left;
+}
+.boardSpot {
+  border: 1px solid #000;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  overflow: hidden;
+}
+.boardSpot.red {
+  background-color: #f00;
+}
+.boardSpot.black {
+  background-color: #000;
+}
+.debugPanel {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  border: 1px solid #000;
+}

@@ -1,0 +1,5 @@
+node_modules
+.DS_Store
+logs/connect-four.log
+npm-debug.log
+
