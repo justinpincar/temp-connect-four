@@ -1,0 +1,182 @@
+<% include ../layout/header %>
+
+<script>
+  function GameCtrl($scope) {
+    var randomString = function(length) {
+      chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var result = '';
+      for (var i=length; i>0; --i) {
+        result += chars[Math.round(Math.random() * (chars.length - 1))];
+      }
+      return result;
+    }
+
+    $scope.idStr = $.cookie("testIdStr");
+    if (!$scope.idStr) {
+      $scope.idStr = randomString(16);
+      $.cookie("testIdStr", $scope.idStr);
+    }
+
+    $scope.visitors = [];
+    $scope.game = null;
+
+    $scope.debugVisible = true;
+
+    var colors = ['red', 'black'];
+    $scope.getPlayerColor = function(player) {
+      if (player == null) {
+        return '';
+      }
+
+      var players = $scope.game.players;
+      var playerIndex = players.indexOf(player);
+      if (playerIndex == -1) {
+        return '';
+      }
+
+      return colors[playerIndex];
+    };
+
+    $scope.reverseArray = function(arr) {
+      var tmp = [];
+      for (var i=arr.length-1; i>=0; i--) {
+        tmp.push(arr[i]);
+      }
+      return tmp;
+    };
+
+    var socket = null;
+    var initSocket = function() {
+      var socket_ok = function() {
+        console.info("Socket ok");
+        socket.emit('joinRoom', {
+          idStr: $scope.idStr
+        });
+      };
+
+      var socket_error = function() {
+        console.error("Socket error");
+      };
+
+
+      if (document.location.host == "www.bitsaloon.com") {
+        socket = io.connect('', {secure: true, resource: "3001/socket.io"});
+        } else {
+        socket = io.connect('//localhost:3001');
+      }
+
+      socket.on('connect', socket_ok);
+      socket.on('reconnect', socket_ok);
+      socket.on('disconnect', socket_error);
+      socket.on('connect_failed', socket_error);
+      socket.on('reconnect_failed', socket_error);
+      socket.on('serverError', function(data) {
+        console.error("serverError", data);
+      });
+
+      socket.on('setRoom', function(data) {
+        console.debug('setRoom', data);
+        $scope.$apply(function() {
+          $scope.visitors = data.visitors;
+          $scope.game = data.game;
+        });
+      });
+
+      $scope.sit = function() {
+        socket.emit('action', {
+          action: 'sit'
+        });
+      }
+
+      $scope.play = function(column) {
+        console.log("column is: " + column);
+        socket.emit('action', {
+          action: 'play',
+          column: column
+        });
+      };
+
+      $scope.nextGame = function() {
+        socket.emit('nextGame');
+      }
+      $scope.refreshRoom = function() {
+        socket.emit('refreshRoom');
+      }
+
+      //ko.applyBindings(new PokerViewModel());
+    };
+
+    var scriptSrc = null;
+    if (document.location.host == "www.bitsaloon.com") {
+      scriptSrc = "/3001/socket.io/socket.io.js";
+      } else {
+      scriptSrc = "//localhost:3001/socket.io/socket.io.js";
+    }
+    $.getScript(scriptSrc, initSocket);
+  }
+</script>
+
+<div ng-controller="GameCtrl">
+
+<div class="subheader">
+  <h1>Connect Four</h1>
+  <h2>Alias: Captain's Mistress</h2>
+</div>
+
+<div class="content">
+    <button ng-click="refreshRoom()">Refresh Room</button><br />
+    <br />
+
+    <div class="gameBoard">
+      <div ng-show="game.board == null">No board.</div>
+      <div ng-show="game.board != null">
+        <div class="boardColumn" ng-repeat="column in game.board">
+          <div ng-repeat="row in reverseArray(column)" class="boardSpot" ng-class="getPlayerColor(row)" ng-click="play($parent.$index)"></div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <dl>
+      <dt>State</dt>
+      <dd>{{ game.state }}</dd>
+
+      <dt>Action</dt>
+      <dd ng-show="game.action == null">null</dd>
+      <dl ng-show="game.action != null" style="margin-left: 40px">
+        <dt>Player</dt>
+        <dd>{{ game.action.player }}</dd>
+
+        <dt>Timer</dt>
+        <dd>{{ game.action.timer }}</dd>
+      </dl>
+
+      <dt>Winner</dt>
+      <dd>{{ game.winner }}</dd>
+    </dl>
+
+    <br />
+    Visitors
+    <ul>
+      <li ng-repeat="visitor in visitors"><span>{{ visitor }}</span></li>
+    </ul>
+    <br />
+
+    <!-- Used for debugging, do not put restrictions on these actions -->
+    <div class="debugPanel" ng-show="debugVisible">
+      <dl>
+        <dt>Id Str</dt>
+        <dd>{{ idStr }}</dd>
+      </dl>
+      <hr />
+      <button ng-click="sit()">Sit</button><br /><br />
+      <button ng-click="nextGame()">Next Game</button><br />
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<% include ../layout/footer %>
+
