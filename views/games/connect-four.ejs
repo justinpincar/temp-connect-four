@@ -58,7 +58,7 @@
         console.error("Socket error");
       };
 
-      if (document.location.host == "mew.io") {
+      if (document.location.host == "mew.io:3000") {
         socket = io.connect('//mew.io:3001');
       } else {
         socket = io.connect('//localhost:3001');
@@ -103,7 +103,7 @@
     };
 
     var scriptSrc = null;
-    if (document.location.host == "mew.io") {
+    if (document.location.host == "mew.io:3000") {
       scriptSrc = "//mew.io:3001/socket.io/socket.io.js";
     } else {
       scriptSrc = "//localhost:3001/socket.io/socket.io.js";
