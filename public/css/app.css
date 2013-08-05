@@ -74,6 +74,7 @@ textarea {
   border-top: 1px solid #eee;
   padding: 0.5em 0;
   background: #fafafa;
+  margin-top: 30px;
 }
 .legal-license,
 .legal-copyright {
@@ -117,7 +118,7 @@ textarea {
 }
 .hero {
   text-align: center;
-  margin: 8em 0 3em;
+  margin: 8em 0 1em;
 }
 .hero h1 {
   font-size: 800%;
