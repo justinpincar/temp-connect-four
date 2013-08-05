@@ -45,3 +45,4 @@
         return null;
     };
 })(jQuery);
+

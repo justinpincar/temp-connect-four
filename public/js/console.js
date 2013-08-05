@@ -1,5 +1,5 @@
 (function(global){
-  var PROD_HOST = "bitsaloon.com";
+  var PROD_HOST = "bitsaloon.com"; // TODO: Change me
   var regex =  new RegExp("^http(s?):\\/\\/(www\\.)?" + PROD_HOST, "i");
   var prod = global.location.href.match(regex) !== null,
   api = ["log","debug","info","warn","error","assert","dir","dirxml",

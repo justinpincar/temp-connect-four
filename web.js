@@ -32,12 +32,8 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('*', function(req, res){
-  var fullURL = req.protocol + "://" + req.get('host') + req.url;
-  console.log("404 for page: " + fullURL);
-  res.status(404);
-  return res.end();
-});
+var routes = require('./routes')(App);
+routes._bind();
 
 app.listen(app.get('port'));
 console.log("Server listening for HTTP on port " + app.get('port') + " in " + app.get('env') + " mode");
