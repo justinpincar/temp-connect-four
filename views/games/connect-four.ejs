@@ -58,10 +58,9 @@
         console.error("Socket error");
       };
 
-
-      if (document.location.host == "www.bitsaloon.com") {
-        socket = io.connect('', {secure: true, resource: "3001/socket.io"});
-        } else {
+      if (document.location.host == "mew.io") {
+        socket = io.connect('//mew.io:3001');
+      } else {
         socket = io.connect('//localhost:3001');
       }
 
@@ -89,7 +88,6 @@
       }
 
       $scope.play = function(column) {
-        console.log("column is: " + column);
         socket.emit('action', {
           action: 'play',
           column: column
@@ -102,14 +100,12 @@
       $scope.refreshRoom = function() {
         socket.emit('refreshRoom');
       }
-
-      //ko.applyBindings(new PokerViewModel());
     };
 
     var scriptSrc = null;
-    if (document.location.host == "www.bitsaloon.com") {
-      scriptSrc = "/3001/socket.io/socket.io.js";
-      } else {
+    if (document.location.host == "mew.io") {
+      scriptSrc = "//mew.io:3001/socket.io/socket.io.js";
+    } else {
       scriptSrc = "//localhost:3001/socket.io/socket.io.js";
     }
     $.getScript(scriptSrc, initSocket);
