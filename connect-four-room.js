@@ -58,11 +58,9 @@ App.io.sockets.on('connection', function (socket) {
   });
   socket.on('action', function(data) {
     handleAction(socket, data);
-    sendRoom();
   });
   socket.on('nextGame', function(data) {
     handleAction(null, {action: "continue"});
-    sendRoom();
   });
   socket.on('refreshRoom', function(data) {
     sendRoomToSocket(socket);
