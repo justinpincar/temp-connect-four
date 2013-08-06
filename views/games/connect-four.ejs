@@ -1,6 +1,15 @@
 <% include ../layout/header %>
 
 <script>
+  Array.prototype.indexOfObject = function (property, value) {
+    for (var i=0; i<this.length; i++) {
+      if (this[i][property] === value) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
   function GameCtrl($scope) {
     var randomString = function(length) {
       chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -29,7 +38,8 @@
       }
 
       var players = $scope.game.players;
-      var playerIndex = players.indexOf(player);
+      var playerIndex = players.indexOfObject('idStr', player);
+
       if (playerIndex == -1) {
         return '';
       }
@@ -49,7 +59,8 @@
     var initSocket = function() {
       var socket_ok = function() {
         console.info("Socket ok");
-        socket.emit('joinRoom', {
+        socket.emit('identify', {
+          alias: $scope.idStr,
           idStr: $scope.idStr
         });
       };
@@ -73,11 +84,18 @@
         console.error("serverError", data);
       });
 
-      socket.on('setRoom', function(data) {
-        console.debug('setRoom', data);
+      socket.on('setState', function(data) {
+        console.debug('setState', data);
         $scope.$apply(function() {
           $scope.visitors = data.visitors;
           $scope.game = data.game;
+        });
+      });
+
+      socket.on('setGame', function(data) {
+        console.debug('setGame', data);
+        $scope.$apply(function() {
+          $scope.game = data;
         });
       });
 
@@ -97,8 +115,8 @@
       $scope.nextGame = function() {
         socket.emit('nextGame');
       }
-      $scope.refreshRoom = function() {
-        socket.emit('refreshRoom');
+      $scope.refreshState = function() {
+        socket.emit('refreshState');
       }
     };
 
@@ -120,7 +138,7 @@
 </div>
 
 <div class="content">
-    <button ng-click="refreshRoom()">Refresh Room</button><br />
+    <button ng-click="refreshState()">Refresh State</button><br />
     <br />
 
     <div class="gameBoard">

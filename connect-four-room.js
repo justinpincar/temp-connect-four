@@ -1,3 +1,5 @@
+var prototypes = require('./prototypes');
+
 var path = require('path');
 
 var winston = require('winston');
@@ -21,21 +23,32 @@ App.Models = {};
 var io = require('socket.io').listen(3001);
 App.io = io;
 
-Array.prototype.indexOfObject = function (property, value) {
-  for (var i=0; i<this.length; i++) {
-    if (this[i][property] === value) {
-      return i;
-    }
-  }
-  return -1;
+var notifyUsers = function(data) {
+  App.io.sockets.emit("setGame", data);
 };
 
+var notifyUser = function(player, data) {
+  var socket = player.socket;
+  socket.emit("setPlayer", data);
+};
+
+// TODO: Send visitors
 var visitors = [];
 
-var ConnectFourGame = require('./connect-four-game');
-var game = new ConnectFourGame();
+var Player = function(alias, idStr, socket) {
+  return {
+    alias: alias,
+    idStr: idStr,
+    getSocket: function() {
+      return socket;
+    }
+  };
+};
 
-var getRoom = function() {
+var ConnectFourGame = require('./connect-four-game');
+var game = new ConnectFourGame(notifyUsers, notifyUser);
+
+var getState = function() {
   return {
     visitors: visitors,
     game: game.toJson()
@@ -44,17 +57,25 @@ var getRoom = function() {
 
 App.io.sockets.on('connection', function (socket) {
   socket.data = {};
-  socket.on('joinRoom', function(data) {
-    var idStr = socket.data.idStr = data.idStr;
+  socket.on('identify', function(data) {
+    var alias = data.alias;
+    if (!alias) {
+      return;
+    }
+
+    var idStr = data.idStr;
     if (!idStr) {
       return;
     }
+
+    var player = new Player(alias, idStr, socket);
+    socket.data.player = player;
 
     var visitorIndex = visitors.indexOf(idStr);
     if (visitorIndex == -1) {
       visitors.push(idStr);
     }
-    sendRoom();
+    sendState();
   });
   socket.on('action', function(data) {
     handleAction(socket, data);
@@ -62,8 +83,8 @@ App.io.sockets.on('connection', function (socket) {
   socket.on('nextGame', function(data) {
     handleAction(socket, {action: "continue"});
   });
-  socket.on('refreshRoom', function(data) {
-    sendRoomToSocket(socket);
+  socket.on('refreshState', function(data) {
+    sendStateToSocket(socket); // TODO
   });
   socket.on('disconnect', function () {
     var idStr = socket.data.idStr;
@@ -78,16 +99,16 @@ App.io.sockets.on('connection', function (socket) {
 
     // TODO: Handle player disconnect
 
-    sendRoom();
+    sendState();
   });
 });
 
-var sendRoom = function() {
-  App.io.sockets.emit("setRoom", getRoom());
+var sendState = function() {
+  App.io.sockets.emit("setState", getState());
 };
 
-var sendRoomToSocket = function(socket) {
-  socket.emit("setRoom", getRoom());
+var sendStateToSocket = function(socket) {
+  socket.emit("setState", getState());
 };
 
 var sendError = function(socket, data, error) {
@@ -110,14 +131,13 @@ var handleAction = function(socket, data) {
     if (err) {
       sendError(socket, data, err.message);
     }
-    sendRoom();
   };
 
   if (!action) {
     return callback(new Error("No action sent"));
   }
 
-  var player = socket.data.idStr;
+  var player = socket.data.player;
   if (!player) {
     return callback(new Error("No player attached to socket"));
   }
