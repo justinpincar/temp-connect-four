@@ -4,23 +4,29 @@ body, html, button, input, select, textarea
 .brand-title
   font-weight: 400
 
+tile-size = 40px
+tile-margin = 6px
+
 .gameBoard
+  display: inline-block
   border: 1px solid purple;
-  width: 400px
-  height: 300px
+  padding: tile-margin
+  background-color: yellow;
 
 .boardColumn
   display: inline-block
-  border: 1px solid red
-  width: 40px;
+  width: tile-size + (2 * tile-margin)
   float: left
 
 .boardSpot
   border: 1px solid black
   border-radius: 50%
-  height: 40px
-  width: 40px
+  height: tile-size
+  width: tile-size
   overflow: hidden
+  margin: tile-margin
+  background-color: white;
+  cursor: pointer;
   &.red
     background-color: #ff0000;
   &.black

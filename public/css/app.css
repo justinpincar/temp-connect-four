@@ -10,14 +10,14 @@ textarea {
   font-weight: 400;
 }
 .gameBoard {
+  display: inline-block;
   border: 1px solid #800080;
-  width: 400px;
-  height: 300px;
+  padding: 6px;
+  background-color: #ff0;
 }
 .boardColumn {
   display: inline-block;
-  border: 1px solid #f00;
-  width: 40px;
+  width: 52px;
   float: left;
 }
 .boardSpot {
@@ -26,6 +26,9 @@ textarea {
   height: 40px;
   width: 40px;
   overflow: hidden;
+  margin: 6px;
+  background-color: #fff;
+  cursor: pointer;
 }
 .boardSpot.red {
   background-color: #f00;
