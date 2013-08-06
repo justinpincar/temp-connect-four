@@ -60,7 +60,7 @@ App.io.sockets.on('connection', function (socket) {
     handleAction(socket, data);
   });
   socket.on('nextGame', function(data) {
-    handleAction(null, {action: "continue"});
+    handleAction(socket, {action: "continue"});
   });
   socket.on('refreshRoom', function(data) {
     sendRoomToSocket(socket);
@@ -125,16 +125,19 @@ var handleAction = function(socket, data) {
   switch(action) {
     case "sit":
       game.join(player, callback);
-    return;
+      return;
     case "stand":
       game.leave(player, callback);
-    return;
+      return;
     case "play":
       game.play(player, data.column, callback);
-    return;
+      return;
+    case "continue":
+      game.reset(callback);
+      return;
     default:
       callback(new Error("Invalid action"));
-    return;
+      return;
   }
 };
 

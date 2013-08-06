@@ -133,6 +133,11 @@
     </div>
 
     <br />
+    Players
+    <ul>
+      <li ng-repeat="player in game.players"><span>{{ player }}</span></li>
+    </ul>
+
     <dl>
       <dt>State</dt>
       <dd>{{ game.state }}</dd>

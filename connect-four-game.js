@@ -8,9 +8,9 @@ COLUMNS = 7;
 STATES = {
   WAITING: 'waiting',
   ACTIVE: 'active',
+  DELAY: 'delay',
   ENDED: 'ended'
 };
-
 
 var state = STATES.WAITING;
 
@@ -21,6 +21,7 @@ var action = {
 
 var winner = null;
 
+var lastPlayerToLead = null;
 var players = [];
 
 var board = null;
@@ -39,12 +40,20 @@ var newBoard = function() {
 var startGame = function() {
   winner = null;
   board = newBoard();
-  action.player = players[0];
+  var leader;
+  if (lastPlayerToLead == players[0]) {
+    leader = players[1];
+  } else if (lastPlayerToLead == players[1]) {
+    leader = players[0];
+  } else {
+    leader = players[Math.floor(Math.random() * players.length)];
+  }
+  lastPlayerToLead = leader;
+  action.player = leader;
   state = STATES.ACTIVE;
 };
 
 var checkForEndedGame = function() {
-  console.log("enter checkForEndedGame()");
   var numMovesRemaining = 0;
   for (var i=0; i<COLUMNS; i++) {
     for (var j=0; j<ROWS; j++) {
@@ -68,11 +77,9 @@ var checkForEndedGame = function() {
     state = STATES.ENDED;
     winner = null;
   }
-  console.log("exit checkForEndedGame()");
 };
 
 var checkWin = function(spot, x, y) {
-  console.log("checkWin(" + spot + ", " + x + ", " + y + ")");
   return (checkWinLeft(spot, x, y) ||
           checkWinRight(spot, x, y) ||
           checkWinUp(spot, x, y) ||
@@ -96,13 +103,11 @@ var checkWinLeft = function(spot, x, y) {
   return true;
 };
 var checkWinRight = function(spot, x, y) {
-  console.log("checkWinRight(" + spot + ", " + x + ", " + y + ")");
   if (x > 3) {
     return false;
   }
   for (var i=1; i<4; i++) {
     var newSpot = board[x + i][y];
-    console.log("checkWinRight newspot(" + newSpot + ", " + (x + 1) + ", " + y + ")");
     if (newSpot != spot) {
       return false;
     }
@@ -285,6 +290,15 @@ module.exports = function() {
           action.player = players[(playerIndex + 1) % players.length];
         }
 
+        gameSemaphore.leave();
+        return callback();
+      });
+    },
+    reset: function(callback) {
+      gameSemaphore.take(function() {
+        if (players.length == MAX_PLAYERS) {
+          startGame();
+        }
         gameSemaphore.leave();
         return callback();
       });
