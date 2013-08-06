@@ -54,8 +54,17 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
     }
     lastPlayerToLead = leader;
     action.player = leader;
-    action.timer = SECONDS_PER_TURN;
+    resetAndStartActionTimer();
     state = STATES.ACTIVE;
+  };
+
+  var endGame = function(tmpWinner) {
+    clearInterval(actionTimerInterval);
+    state = STATES.ENDED;
+    winner = tmpWinner;
+    action.player = null;
+    action.timer = null;
+    notifyUsers(toJson());
   };
 
   var checkForEndedGame = function() {
@@ -69,17 +78,15 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
         }
 
         if(checkWin(spot, i, j)) {
-          state = STATES.ENDED;
-          winner = spot;
-          action.player = null;
-          action.timer = null;
+          endGame(spot);
+          return;
         }
       }
     }
 
     if ((numMovesRemaining == 0) && (state == STATES.ACTIVE)) {
-      state = STATES.ENDED;
-      winner = null;
+      endGame(null);
+      return;
     }
   };
 
@@ -199,6 +206,40 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
       state: state,
       winner: winner
     };
+  };
+
+  var timeout = function() {
+    gameSemaphore.take(function() {
+      if (!action || !action.timer || (action.timer >= 0)) {
+        console.log("Timout triggered, ignoring");
+        gameSemaphore.leave();
+        return;
+      }
+
+      clearInterval(actionTimerInterval);
+
+      var player = action.player;
+      var playerIndex = players.indexOfObject('idStr', player.idStr);
+      var winner = players[(playerIndex + 1) % players.length];
+
+      endGame(winner);
+      gameSemaphore.leave();
+    });
+  };
+
+  var actionTimerInterval = null;
+  var actionTimerIntervalFn = function() {
+    action.timer = action.timer - 1;
+    if (action.timer < 0) {
+      timeout();
+    } else {
+      notifyUsers(toJson());
+    }
+  };
+
+  var resetAndStartActionTimer = function() {
+    action.timer = SECONDS_PER_TURN;
+    actionTimerInterval = setInterval(actionTimerIntervalFn, 1000);
   };
 
   return {
