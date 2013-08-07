@@ -1,7 +1,7 @@
 var io = require('socket.io-client')
 var socket = io.connect('http://localhost:3001');
 
-var idStr = "justin-bot";
+var idStr = process.env.ID_STR;
 var alias = idStr;
 
 var tryMove = function(data) {

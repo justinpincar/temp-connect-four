@@ -6,6 +6,7 @@ MAX_PLAYERS = 2;
 ROWS = 6;
 COLUMNS = 7;
 SECONDS_PER_TURN = 10;
+DELAY_MS = 500;
 
 STATES = {
   WAITING: 'waiting',
@@ -208,6 +209,21 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
     };
   };
 
+  var delay = function(fn) {
+    oldAction = action;
+    oldState = state;
+
+    action = null;
+    state = STATES.DELAY;
+    fn();
+
+    setTimeout(function() {
+      action = oldAction;
+      state = oldState;
+      fn();
+    }, DELAY_MS);
+  };
+
   var timeout = function() {
     gameSemaphore.take(function() {
       if (!action || !action.timer || (action.timer >= 0)) {
@@ -229,6 +245,10 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
 
   var actionTimerInterval = null;
   var actionTimerIntervalFn = function() {
+    if (!action) {
+      return;
+    }
+
     action.timer = action.timer - 1;
     if (action.timer < 0) {
       timeout();
@@ -347,7 +367,7 @@ var ConnectFourGame = function(notifyUsers, notifyUser) {
           action.timer = SECONDS_PER_TURN;
         }
 
-        notifyUsers(toJson());
+        delay(function() { notifyUsers(toJson()) });
         gameSemaphore.leave();
         return callback();
       });
