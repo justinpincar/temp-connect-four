@@ -9,6 +9,7 @@
     "node-inspector": "0.2.0beta4",
     "semaphore": "1.0.x",
     "socket.io": "0.9.16",
+    "socket.io-client": "0.9.16",
     "stylus": "*",
     "winston": "0.6.x"
   }
