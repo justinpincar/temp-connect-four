@@ -27,7 +27,7 @@
     }
 
     $scope.visitors = [];
-    $scope.game = null;
+    $scope.game = {};
 
     $scope.debugVisible = true;
 
@@ -87,15 +87,15 @@
       socket.on('setState', function(data) {
         console.debug('setState', data);
         $scope.$apply(function() {
-          $scope.visitors = data.visitors;
-          $scope.game = data.game;
+          angular.copy(data.visitors, $scope.visitors);
+          angular.copy(data.game, $scope.game);
         });
       });
 
       socket.on('setGame', function(data) {
         console.debug('setGame', data);
         $scope.$apply(function() {
-          $scope.game = data;
+          angular.copy(data, $scope.game);
         });
       });
 
